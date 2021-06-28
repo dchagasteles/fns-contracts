@@ -1,4 +1,4 @@
-const ENS = artifacts.require('./registry/ENSRegistry');
+const FNS = artifacts.require('./registry/FNSRegistry');
 const PublicResolver = artifacts.require('./resolvers/PublicResolver');
 const BaseRegistrar = artifacts.require('./BaseRegistrarImplementation');
 const ETHRegistrarController = artifacts.require('./ETHRegistrarController');
@@ -7,7 +7,7 @@ const StablePriceOracle = artifacts.require('./StablePriceOracle');
 const BulkRenewal = artifacts.require('./BulkRenewal');
 const NameWrapper = artifacts.require('DummyNameWrapper.sol');
 
-const namehash = require('eth-ens-namehash');
+const namehash = require('eth-fns-namehash');
 const sha3 = require('web3-utils').sha3;
 const toBN = require('web3-utils').toBN;	
 const { exceptions } = require("../test-utils");
@@ -16,7 +16,7 @@ const ETH_LABEL = sha3('eth');
 const ETH_NAMEHASH = namehash.hash('eth');
 
 contract('BulkRenewal', function (accounts) {
-	let ens;
+	let fns;
 	let resolver;
 	let baseRegistrar;
 	let controller;
@@ -30,13 +30,13 @@ contract('BulkRenewal', function (accounts) {
 
 	before(async () => {
 		// Create a registry
-		ens = await ENS.new();
+		fns = await FNS.new();
 		nameWrapper = await NameWrapper.new();
 		// Create a public resolver
-		resolver = await PublicResolver.new(ens.address, nameWrapper.address);
+		resolver = await PublicResolver.new(fns.address, nameWrapper.address);
 
 		// Create a base registrar
-		baseRegistrar = await BaseRegistrar.new(ens.address, namehash.hash('eth'), {from: ownerAccount});
+		baseRegistrar = await BaseRegistrar.new(fns.address, namehash.hash('eth'), {from: ownerAccount});
 
 		// Set up a dummy price oracle and a controller
 		const dummyOracle = await DummyOracle.new(toBN(100000000));
@@ -50,13 +50,13 @@ contract('BulkRenewal', function (accounts) {
 		await baseRegistrar.addController(controller.address, {from: ownerAccount});
 		await baseRegistrar.addController(ownerAccount, {from: ownerAccount});
 		// Create the bulk registration contract
-		bulkRenewal = await BulkRenewal.new(ens.address);
+		bulkRenewal = await BulkRenewal.new(fns.address);
 
 		// Configure a resolver for .eth and register the controller interface
 		// then transfer the .eth node to the base registrar.
-		await ens.setSubnodeRecord('0x0', ETH_LABEL, ownerAccount, resolver.address, 0);
+		await fns.setSubnodeRecord('0x0', ETH_LABEL, ownerAccount, resolver.address, 0);
 		await resolver.setInterface(ETH_NAMEHASH, '0x018fac06', controller.address);
-		await ens.setOwner(ETH_NAMEHASH, baseRegistrar.address);
+		await fns.setOwner(ETH_NAMEHASH, baseRegistrar.address);
 
 		// Register some names
 		for(const name of ['test1', 'test2', 'test3']) {

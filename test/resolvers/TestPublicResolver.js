@@ -1,8 +1,8 @@
-const ENS = artifacts.require('./registry/ENSRegistry.sol');
+const FNS = artifacts.require('./registry/FNSRegistry.sol');
 const PublicResolver = artifacts.require('PublicResolver.sol');
 const NameWrapper = artifacts.require('DummyNameWrapper.sol');
 
-const namehash = require('eth-ens-namehash');
+const namehash = require('eth-fns-namehash');
 const sha3 = require('web3-utils').sha3;
 
 const { exceptions } = require("../test-utils");
@@ -10,14 +10,14 @@ const { exceptions } = require("../test-utils");
 contract('PublicResolver', function (accounts) {
 
     let node;
-    let ens, resolver, nameWrapper;
+    let fns, resolver, nameWrapper;
 
     beforeEach(async () => {
         node = namehash.hash('eth');
-        ens = await ENS.new();
+        fns = await FNS.new();
         nameWrapper = await NameWrapper.new();
-        resolver = await PublicResolver.new(ens.address, nameWrapper.address);
-        await ens.setSubnodeOwner('0x0', sha3('eth'), accounts[0], {from: accounts[0]});
+        resolver = await PublicResolver.new(fns.address, nameWrapper.address);
+        await fns.setSubnodeOwner('0x0', sha3('eth'), accounts[0], {from: accounts[0]});
     });
 
     describe('fallback function', async () => {
@@ -585,8 +585,8 @@ contract('PublicResolver', function (accounts) {
         });
 
         it('returns 0 on fallback when target contract does not support implementsInterface', async () => {
-            // Set addr to the ENS registry, which doesn't implement supportsInterface.
-            await resolver.methods['setAddr(bytes32,address)'](node, ens.address, {from: accounts[0]});
+            // Set addr to the FNS registry, which doesn't implement supportsInterface.
+            await resolver.methods['setAddr(bytes32,address)'](node, fns.address, {from: accounts[0]});
             // Check the ID for `supportsInterface(bytes4)`
             assert.equal(await resolver.interfaceImplementer(node, "0x01ffc9a7"), "0x0000000000000000000000000000000000000000");
         });
@@ -608,7 +608,7 @@ contract('PublicResolver', function (accounts) {
 
         it('permits authorised users to make changes', async () => {
             await resolver.setApprovalForAll(accounts[1], true, {from: accounts[0]});
-            assert.equal(await resolver.isApprovedForAll(await ens.owner(node), accounts[1]), true);
+            assert.equal(await resolver.isApprovedForAll(await fns.owner(node), accounts[1]), true);
             await resolver.methods['setAddr(bytes32,address)'](node, accounts[1], {from: accounts[1]});
             assert.equal(await resolver.addr(node), accounts[1]);
         });
@@ -629,7 +629,7 @@ contract('PublicResolver', function (accounts) {
 
         it('checks the authorisation for the current owner', async () => {
             await resolver.setApprovalForAll(accounts[2], true, {from: accounts[1]});
-            await ens.setOwner(node, accounts[1], {from: accounts[0]});
+            await fns.setOwner(node, accounts[1], {from: accounts[0]});
 
             await resolver.methods['setAddr(bytes32,address)'](node, accounts[0], {from: accounts[2]});
             assert.equal(await resolver.addr(node), accounts[0]);
@@ -655,10 +655,10 @@ contract('PublicResolver', function (accounts) {
         });
 
         it('permits name wrapper owner to make changes if owner is set to name wrapper address', async () => {
-            var owner = await ens.owner(node)            
+            var owner = await fns.owner(node)            
             var operator = accounts[2]
             await exceptions.expectFailure(resolver.methods['setAddr(bytes32,address)'](node, owner, {from: operator}));
-            await ens.setOwner(node, nameWrapper.address, {from: owner})
+            await fns.setOwner(node, nameWrapper.address, {from: owner})
             await expect(resolver.methods['setAddr(bytes32,address)'](node, owner, {from: operator}))
         });
     });

@@ -1,4 +1,4 @@
-const ENS = artifacts.require('./registry/ENSRegistry');
+const FNS = artifacts.require('./registry/FNSRegistry');
 const PublicResolver = artifacts.require('./resolvers/PublicResolver');
 const BaseRegistrar = artifacts.require('./BaseRegistrarImplementation');
 const ETHRegistrarController = artifacts.require('./ETHRegistrarController');
@@ -6,7 +6,7 @@ const DummyOracle = artifacts.require('./DummyOracle');
 const StablePriceOracle = artifacts.require('./StablePriceOracle');
 const { evm, exceptions } = require("../test-utils");
 const NameWrapper = artifacts.require('DummyNameWrapper.sol');
-const namehash = require('eth-ens-namehash');
+const namehash = require('eth-fns-namehash');
 const sha3 = require('web3-utils').sha3;
 const toBN = require('web3-utils').toBN;
 
@@ -14,7 +14,7 @@ const DAYS = 24 * 60 * 60;
 const NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 contract('ETHRegistrarController', function (accounts) {
-    let ens;
+    let fns;
     let resolver;
     let baseRegistrar;
     let controller;
@@ -26,12 +26,12 @@ contract('ETHRegistrarController', function (accounts) {
     const registrantAccount = accounts[1]; // Account that owns test names
 
     before(async () => {
-        ens = await ENS.new();
+        fns = await FNS.new();
         nameWrapper = await NameWrapper.new();
-        resolver = await PublicResolver.new(ens.address, nameWrapper.address);
+        resolver = await PublicResolver.new(fns.address, nameWrapper.address);
 
-        baseRegistrar = await BaseRegistrar.new(ens.address, namehash.hash('eth'), {from: ownerAccount});
-        await ens.setSubnodeOwner('0x0', sha3('eth'), baseRegistrar.address);
+        baseRegistrar = await BaseRegistrar.new(fns.address, namehash.hash('eth'), {from: ownerAccount});
+        await fns.setSubnodeOwner('0x0', sha3('eth'), baseRegistrar.address);
 
         const dummyOracle = await DummyOracle.new(toBN(100000000));
         priceOracle = await StablePriceOracle.new(dummyOracle.address, [1]);
@@ -113,8 +113,8 @@ contract('ETHRegistrarController', function (accounts) {
         assert.equal((await web3.eth.getBalance(controller.address)) - balanceBefore, 28 * DAYS);
 
         var nodehash = namehash.hash("newconfigname.eth");
-        assert.equal((await ens.resolver(nodehash)), resolver.address);
-        assert.equal((await ens.owner(nodehash)), registrantAccount);
+        assert.equal((await fns.resolver(nodehash)), resolver.address);
+        assert.equal((await fns.owner(nodehash)), registrantAccount);
         assert.equal((await resolver.addr(nodehash)), registrantAccount);
     });
 
@@ -137,7 +137,7 @@ contract('ETHRegistrarController', function (accounts) {
         assert.equal((await web3.eth.getBalance(controller.address)) - balanceBefore, 28 * DAYS);
 
         var nodehash = namehash.hash("newconfigname2.eth");
-        assert.equal((await ens.resolver(nodehash)), resolver.address);
+        assert.equal((await fns.resolver(nodehash)), resolver.address);
         assert.equal((await resolver.addr(nodehash)), 0);
     });
 
