@@ -28,6 +28,10 @@ module.exports = {
     },
     localhost: {
       url: "http://127.0.0.1:8545"
+    },
+    testnet: {
+      url: 'https://rpc.testnet.fantom.network',
+      chainID: 4002
     }
   },
   mocha: {
