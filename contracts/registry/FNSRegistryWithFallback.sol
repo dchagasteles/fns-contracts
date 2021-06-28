@@ -1,19 +1,18 @@
 pragma solidity >=0.8.4;
 
-import "./ENS.sol";
-import "./ENSRegistry.sol";
+import "./FNS.sol";
+import "./FNSRegistry.sol";
 
 /**
- * The ENS registry contract.
+ * The FNS registry contract.
  */
-contract ENSRegistryWithFallback is ENSRegistry {
-
-    ENS public old;
+contract FNSRegistryWithFallback is FNSRegistry {
+    FNS public old;
 
     /**
-     * @dev Constructs a new ENS registrar.
+     * @dev Constructs a new FNS registrar.
      */
-    constructor(ENS _old) public ENSRegistry() {
+    constructor(FNS _old) public FNSRegistry() {
         old = _old;
     }
 
@@ -22,7 +21,7 @@ contract ENSRegistryWithFallback is ENSRegistry {
      * @param node The specified node.
      * @return address of the resolver.
      */
-    function resolver(bytes32 node) public override view returns (address) {
+    function resolver(bytes32 node) public view override returns (address) {
         if (!recordExists(node)) {
             return old.resolver(node);
         }
@@ -35,7 +34,7 @@ contract ENSRegistryWithFallback is ENSRegistry {
      * @param node The specified node.
      * @return address of the owner.
      */
-    function owner(bytes32 node) public override view returns (address) {
+    function owner(bytes32 node) public view override returns (address) {
         if (!recordExists(node)) {
             return old.owner(node);
         }
@@ -48,7 +47,7 @@ contract ENSRegistryWithFallback is ENSRegistry {
      * @param node The specified node.
      * @return ttl of the node.
      */
-    function ttl(bytes32 node) public override view returns (uint64) {
+    function ttl(bytes32 node) public view override returns (uint64) {
         if (!recordExists(node)) {
             return old.ttl(node);
         }

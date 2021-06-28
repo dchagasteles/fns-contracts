@@ -1,6 +1,6 @@
 pragma solidity >=0.8.4;
 
-import "../registry/ENS.sol";
+import "../registry/FNS.sol";
 import "../registry/ReverseRegistrar.sol";
 
 /**
@@ -9,29 +9,32 @@ import "../registry/ReverseRegistrar.sol";
  */
 contract DefaultReverseResolver {
     // namehash('addr.reverse')
-    bytes32 constant ADDR_REVERSE_NODE = 0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2;
+    bytes32 constant ADDR_REVERSE_NODE =
+        0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2;
 
-    ENS public ens;
-    mapping (bytes32 => string) public name;
+    FNS public fns;
+    mapping(bytes32 => string) public name;
 
     /**
      * @dev Only permits calls by the reverse registrar.
      * @param node The node permission is required for.
      */
     modifier onlyOwner(bytes32 node) {
-        require(msg.sender == ens.owner(node));
+        require(msg.sender == fns.owner(node));
         _;
     }
 
     /**
      * @dev Constructor
-     * @param ensAddr The address of the ENS registry.
+     * @param fnsAddr The address of the FNS registry.
      */
-    constructor(ENS ensAddr) {
-        ens = ensAddr;
+    constructor(FNS fnsAddr) {
+        fns = fnsAddr;
 
         // Assign ownership of the reverse record to our deployer
-        ReverseRegistrar registrar = ReverseRegistrar(ens.owner(ADDR_REVERSE_NODE));
+        ReverseRegistrar registrar = ReverseRegistrar(
+            fns.owner(ADDR_REVERSE_NODE)
+        );
         if (address(registrar) != address(0x0)) {
             registrar.claim(msg.sender);
         }

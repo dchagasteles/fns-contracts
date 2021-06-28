@@ -1,25 +1,25 @@
 pragma solidity >=0.8.4;
 
-import "./ENS.sol";
+import "./FNS.sol";
 
 /**
  * A registrar that allocates subdomains to the first person to claim them, but
  * expires registrations a fixed period after they're initially claimed.
  */
 contract TestRegistrar {
-    uint constant registrationPeriod = 4 weeks;
+    uint256 constant registrationPeriod = 4 weeks;
 
-    ENS public ens;
+    FNS public fns;
     bytes32 public rootNode;
-    mapping (bytes32 => uint) public expiryTimes;
+    mapping(bytes32 => uint256) public expiryTimes;
 
     /**
      * Constructor.
-     * @param ensAddr The address of the ENS registry.
+     * @param fnsAddr The address of the FNS registry.
      * @param node The node that this registrar administers.
      */
-    constructor(ENS ensAddr, bytes32 node) public {
-        ens = ensAddr;
+    constructor(FNS fnsAddr, bytes32 node) public {
+        fns = fnsAddr;
         rootNode = node;
     }
 
@@ -32,6 +32,6 @@ contract TestRegistrar {
         require(expiryTimes[label] < block.timestamp);
 
         expiryTimes[label] = block.timestamp + registrationPeriod;
-        ens.setSubnodeOwner(rootNode, label, owner);
+        fns.setSubnodeOwner(rootNode, label, owner);
     }
 }
